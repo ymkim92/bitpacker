@@ -19,10 +19,6 @@ else()
     target_compile_features(bitpacker INTERFACE cxx_std_14)
 endif()
 
-target_sources(bitpacker INTERFACE
-    include/bitpacker/bitpacker.hpp
-)
-
 target_include_directories(bitpacker INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
