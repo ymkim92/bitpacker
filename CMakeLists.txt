@@ -5,12 +5,11 @@ project(bitpacker
     LANGUAGES C CXX
 )
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
-
+# Add the library as header-only
 add_library(bitpacker INTERFACE)
 add_library(bitpacker::bitpacker ALIAS bitpacker)
 
-option(BITPACKER_USE_CXX17 "enable C++17 features for bitpacker" ON)
+option(BITPACKER_USE_CXX17 "Enable C++17 features for bitpacker" ON)
 if(BITPACKER_USE_CXX17)
     message("Using C++17 bitpacker features...")
     target_compile_features(bitpacker INTERFACE cxx_std_17)
@@ -24,14 +23,41 @@ target_include_directories(bitpacker INTERFACE
     $<INSTALL_INTERFACE:include>
 )
 
-## packaging and testing: probably only want if this is not a sub-project
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    option(ENABLE_TESTING "Enable Test Builds" ON)
-    if(ENABLE_TESTING)
-        enable_testing()
-        message("Building Tests...")
-        add_subdirectory(tests)
-    endif()
+# Install the library
+install(
+    TARGETS bitpacker
+    EXPORT bitpackerTargets
+    INCLUDES DESTINATION include
+)
 
-    add_subdirectory(packaging)
-endif()
+# Install the headers
+install(DIRECTORY include/ DESTINATION include)
+
+# Export the targets to a file
+install(
+    EXPORT bitpackerTargets
+    NAMESPACE bitpacker::
+    DESTINATION share/bitpacker
+)
+
+# Generate the config file for find_package
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_LIST_DIR}/cmake/bitpacker-config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/bitpacker-config.cmake"
+    INSTALL_DESTINATION share/bitpacker
+)
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/bitpacker-config-version.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+
+install(
+    FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/bitpacker-config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/bitpacker-config-version.cmake"
+    DESTINATION share/bitpacker
+)
